@@ -544,7 +544,7 @@ function updateCamera(dt) {
   let dy = targetYaw - cam.yaw;
   while (dy > Math.PI) dy -= Math.PI * 2;
   while (dy < -Math.PI) dy += Math.PI * 2;
-  if (S.inCar) cam.yaw += dy * Math.min(1, dt * 1.6);
+  if (S.inCar) cam.yaw += dy * Math.min(1, dt * 4);
   const cx = px - Math.sin(cam.yaw) * cam.dist * Math.cos(cam.pitch);
   const cz = pz - Math.cos(cam.yaw) * cam.dist * Math.cos(cam.pitch);
   const cy = 2.2 + cam.dist * Math.sin(cam.pitch);

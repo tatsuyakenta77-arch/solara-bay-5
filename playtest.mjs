@@ -90,6 +90,7 @@ try {
   // Cover shot: long straight run down the main north-south road, skyline ahead.
   await dbg(`window.__MH.debug.teleport(0, 120, ${Math.PI})`);
   await holdUntil('KeyW', async () => Math.abs((await st()).speed) > 8, 20000, 'cover run');
+  await sleep(2000);
   await shot(`${SHOTS}/1-cover.jpg`);
 
   // Mission 1: deliver to Mara's garage.
@@ -212,6 +213,7 @@ try {
   const faceHeading = Math.atan2(pdx, pdz);
   await dbg(`window.__MH.debug.teleport(${parkX}, ${parkZ}, ${faceHeading})`);
   await holdUntil('KeyW', async () => Math.abs((await st()).speed) > 8, 20000, 'fleeing');
+  await sleep(4000); // let the trailing camera swing around behind the car
   await shot(`${SHOTS}/2-chase.jpg`);
 
   // Pause / resume.
