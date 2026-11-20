@@ -500,6 +500,9 @@ function updateCourier(dt) {
   while (dh > Math.PI) dh -= Math.PI * 2;
   while (dh < -Math.PI) dh += Math.PI * 2;
   co.drive(dt, 1, clamp(dh * 1.8, -1, 1), 0, world.colliders);
+  // The courier is slower than the player's top speed, so a determined
+  // chase can catch it — but it still takes a few good hits to stop.
+  if (Math.abs(co.speed) > 30) co.speed = Math.sign(co.speed) * 30;
 }
 
 function updatePolice(dt) {
@@ -651,15 +654,32 @@ window.__MH = {
       kills: S.kills,
       enemies: combat.enemies.length,
       police: police.units.length,
+      courier: S.courier ? { x: Math.round(S.courier.x), z: Math.round(S.courier.z), health: Math.round(S.courier.health) } : null,
     };
   },
   debug: {
     setWanted(n) { S.heat = n * TUNING.heatPerStar; S.lastCrimeT = S.elapsed; addHeat(0); },
-    teleport(x, z) { player.x = x; player.z = z; if (S.inCar) { S.inCar.x = x; S.inCar.z = z; } },
+    teleport(x, z, heading) {
+      player.x = x; player.z = z;
+      if (typeof heading === 'number') player.heading = heading;
+      if (S.inCar) {
+        S.inCar.x = x; S.inCar.z = z;
+        if (typeof heading === 'number') S.inCar.heading = heading;
+      }
+    },
     giveCash(n) { S.cash += n; },
     setHealth(n) { S.health = n; },
     startMission(i) { missions.startMission(i); },
-    killAll() { for (const e of [...combat.enemies]) { e.health = 0; } },
+    killAll() { for (const e of [...combat.enemies]) { if (e.health > 0) { e.health = 0; S.kills++; } } },
+    damageCourier(n) {
+      if (!S.courier || S.courierStopped) return;
+      S.courier.health -= n;
+      if (S.courier.health <= 0) {
+        S.courier.stopped = true;
+        S.courierStopped = true;
+        S.briefcasePos = { x: S.courier.x, z: S.courier.z };
+      }
+    },
     skipStage() { missions.stageIdx++; missions.startStage(); },
     enterNearestCar() { tryEnterExitCar(); },
   },
