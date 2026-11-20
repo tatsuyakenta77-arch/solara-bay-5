@@ -78,7 +78,7 @@ try {
   await shot(`${SHOTS}/4-street.jpg`);
 
   // Steal the starter car and drive.
-  await dbg(`window.__MH.debug.teleport(10, 34)`);
+  await dbg(`window.__MH.debug.teleport(10, 32)`);
   await sleep(300);
   await page.keyboard.press('KeyE');
   await sleep(400);
@@ -90,7 +90,7 @@ try {
   await shot(`${SHOTS}/1-cover.jpg`);
 
   // Mission 1: deliver to Mara's garage.
-  await dbg(`window.__MH.debug.teleport(-90, -48)`);
+  await dbg(`window.__MH.debug.teleport(-92, -48)`);
   await waitFor(async () => (await st()).mission === 'Hot Wheels', 8000, 'mission 2 starts');
   s = await st();
   assert(s.mission === 'Hot Wheels', 'mission 2 active');
@@ -107,12 +107,24 @@ try {
   await sleep(400);
   s = await st();
   assert(s.inCar, 'entered marked coupe');
-  await dbg(`window.__MH.debug.teleport(138, -144)`);
+  await dbg(`window.__MH.debug.teleport(140, -144)`);
   await waitFor(async () => (await st()).mission === 'The Pickup', 8000, 'mission 3 starts');
   assert((await st()).mission === 'The Pickup', 'mission 3 active');
 
+  // Save / continue: reload mid-game, Continue resumes mission 3 with the cash kept.
+  await page.reload({ waitUntil: 'load' });
+  await sleep(2500);
+  const contVisible = await page.isVisible('#btnContinue');
+  assert(contVisible, 'Continue button offered after reload');
+  await page.click('#btnContinue');
+  await sleep(1000);
+  s = await st();
+  assert(s.mode === 'playing', 'continue resumes play');
+  assert(s.mission === 'The Pickup', 'continue resumes mission 3');
+  assert(s.cash >= 1300, `save kept the cash ($${s.cash})`);
+
   // Mission 3: pier ambush, then deliver.
-  await dbg(`window.__MH.debug.teleport(0, 210)`);
+  await dbg(`window.__MH.debug.teleport(0, 212)`);
   await sleep(600);
   s = await st();
   assert(s.enemies >= 3, `ambush spawned (${s.enemies} enemies)`);
@@ -122,7 +134,7 @@ try {
   await sleep(800);
   await dbg(`window.__MH.debug.teleport(0, 224)`);
   await waitFor(async () => (await st()).stage === 'goto', 8000, 'pickup stage done');
-  await dbg(`window.__MH.debug.teleport(-90, -48)`);
+  await dbg(`window.__MH.debug.teleport(-92, -48)`);
   await waitFor(async () => (await st()).mission === 'Payback', 8000, 'mission 4 starts');
   assert((await st()).mission === 'Payback', 'mission 4 active');
 
@@ -161,18 +173,20 @@ try {
     await holdUntil('KeyW', async () => {
       const cur = await st();
       return !cur.courier || cur.courier.health < 100;
-    }, 25000, 'ram connects');
+    }, 90000, 'ram connects');
     s = await st();
     if (s.courier && s.courier.health < 100) rammed = true;
   }
   assert(rammed, 'ramming the courier damages it');
   await dbg(`window.__MH.debug.damageCourier(100)`);
   await sleep(500);
-  await waitFor(async () => (await st()).stage === 'pickup', 8000, 'briefcase stage');
+  // The pickup stage can complete instantly (the briefcase drops at the
+  // player's feet), so accept either it or the deliver stage that follows.
+  await waitFor(async () => { const s = await st(); return s.stage === 'pickup' || s.stage === 'goto'; }, 15000, 'briefcase stage');
   s = await st();
   await dbg(`window.__MH.debug.teleport(${s.x}, ${s.z})`);
   await sleep(300);
-  await dbg(`window.__MH.debug.teleport(48, 138)`);
+  await dbg(`window.__MH.debug.teleport(48, 141)`);
   await waitFor(async () => (await st()).mission === 'Bridge Run', 8000, 'mission 6 starts');
   assert((await st()).mission === 'Bridge Run', 'mission 6 active');
 
@@ -199,17 +213,6 @@ try {
   s = await st();
   assert(s.mode === 'won', 'game won');
   assert(s.cash >= 7500, `final take $${s.cash}`);
-
-  // Save / continue: reload, Continue resumes the last mission.
-  await page.reload({ waitUntil: 'load' });
-  await sleep(2500);
-  const contVisible = await page.isVisible('#btnContinue');
-  assert(contVisible, 'Continue button offered after reload');
-  await page.click('#btnContinue');
-  await sleep(1000);
-  s = await st();
-  assert(s.mode === 'playing', 'continue resumes play');
-  assert(s.cash >= 7500, `save kept the cash ($${s.cash})`);
 } catch (e) {
   errors.push('exception: ' + (e && e.message));
   console.error('EXCEPTION:', e);

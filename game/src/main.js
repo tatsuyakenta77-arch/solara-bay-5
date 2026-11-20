@@ -147,6 +147,10 @@ const missions = new Missions(scene, {
   onAllComplete: (text) => {
     S.mode = 'won';
     audio.jingle();
+    // Restart point for a later Continue: back at the apartment, so the
+    // final mission replays from its start instead of instantly re-winning.
+    player.x = PLAYER_START.x;
+    player.z = PLAYER_START.z;
     showEnd('PORT MERIDIAN IS YOURS', text + ` Final take: $${S.cash.toLocaleString('en-US')}.`);
     saveGame();
   },
@@ -299,7 +303,9 @@ function saveGame() {
   try {
     localStorage.setItem(TUNING.saveKey, JSON.stringify({
       cash: S.cash, health: S.health, mag: S.mag, reserve: S.reserve,
-      missionIdx: missions.index, x: player.x, z: player.z,
+      missionIdx: missions.index,
+      x: S.inCar ? S.inCar.x : player.x,
+      z: S.inCar ? S.inCar.z : player.z,
     }));
   } catch { /* storage unavailable — play on without saving */ }
 }

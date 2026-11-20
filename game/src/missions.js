@@ -114,8 +114,8 @@ export class Missions {
 
   completeMission() {
     const m = this.mission();
-    this.events.onMissionComplete(m);
     this.index++;
+    this.events.onMissionComplete(m);
     if (this.index >= MISSIONS.length) {
       this.done = true;
       this.hideMarker();
