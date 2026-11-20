@@ -87,6 +87,9 @@ try {
   await holdUntil('KeyW', async () => Math.abs((await st()).speed) > 5, 20000, 'car drives');
   s = await st();
   assert(Math.abs(s.speed) > 5, `car drives (speed ${s.speed.toFixed(1)})`);
+  // Cover shot: long straight run down the main north-south road, skyline ahead.
+  await dbg(`window.__MH.debug.teleport(0, 120, ${Math.PI})`);
+  await holdUntil('KeyW', async () => Math.abs((await st()).speed) > 8, 20000, 'cover run');
   await shot(`${SHOTS}/1-cover.jpg`);
 
   // Mission 1: deliver to Mara's garage.
@@ -198,7 +201,16 @@ try {
   await waitFor(async () => (await st()).police >= 2, 10000, 'police respond');
   s = await st();
   assert(s.wanted === 3, `wanted 3 stars (got ${s.wanted})`);
-  assert(s.police >= 2, `${s.police} police units chasing`);
+  assert(s.police.length >= 2, `${s.police.length} police units chasing`);
+  // Chase shot: put the nearest police unit in frame — park the player car
+  // ahead of it, facing back at it, so it drives into view head-on.
+  const pu = s.police[0];
+  const pdx = pu.x - s.x, pdz = pu.z - s.z;
+  const pdist = Math.hypot(pdx, pdz) || 1;
+  const parkX = pu.x - (pdx / pdist) * 30;
+  const parkZ = pu.z - (pdz / pdist) * 30;
+  const faceHeading = Math.atan2(pdx, pdz);
+  await dbg(`window.__MH.debug.teleport(${parkX}, ${parkZ}, ${faceHeading})`);
   await holdUntil('KeyW', async () => Math.abs((await st()).speed) > 8, 20000, 'fleeing');
   await shot(`${SHOTS}/2-chase.jpg`);
 

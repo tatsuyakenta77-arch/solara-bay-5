@@ -665,7 +665,7 @@ window.__MH = {
       inCar: !!S.inCar,
       kills: S.kills,
       enemies: combat.enemies.length,
-      police: police.units.length,
+      police: police.units.map((u) => ({ x: Math.round(u.car.x), z: Math.round(u.car.z), heading: u.car.heading })),
       courier: S.courier ? { x: Math.round(S.courier.x), z: Math.round(S.courier.z), heading: S.courier.heading, health: Math.round(S.courier.health) } : null,
     };
   },
