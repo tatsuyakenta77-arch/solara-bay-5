@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian Heat — Port Meridian</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.min.js" } }
+</script>
+</head>
+<body>
+<div id="app">
+  <canvas id="scene"></canvas>
+
+  <div id="hud" class="hidden">
+    <div id="hudTopLeft">
+      <div id="wanted" aria-label="wanted level"></div>
+      <div id="objective"><span id="objTitle"></span><span id="objText"></span></div>
+    </div>
+    <div id="hudTopRight">
+      <div id="cash">$0</div>
+      <div id="clock">09:00</div>
+    </div>
+    <div id="hudBottomLeft">
+      <div id="healthBar"><div id="healthFill"></div><span id="healthText"></span></div>
+      <div id="ammo">PISTOL — <span id="ammoText"></span></div>
+    </div>
+    <div id="hudBottomRight">
+      <div id="speed"><span id="speedNum">0</span><span id="speedUnit">MPH</span></div>
+      <div id="hint"></div>
+    </div>
+    <canvas id="minimap" width="220" height="220"></canvas>
+    <div id="banner" class="hidden"></div>
+    <div id="toast" class="hidden"></div>
+  </div>
+
+  <div id="menu" class="overlay">
+    <div class="panel">
+      <h1>MERIDIAN HEAT</h1>
+      <p class="tagline">Port Meridian — drive fast, stay free.</p>
+      <p class="story">Jace Marlowe is back in Port Meridian, broke and
+      owed. Fixer Mara Quinn has six jobs. Run them, get paid, and don't
+      let the PD catch you.</p>
+      <div class="buttons">
+        <button id="btnNew">NEW GAME</button>
+        <button id="btnContinue" class="hidden">CONTINUE</button>
+        <button id="btnHow">HOW TO PLAY</button>
+      </div>
+      <div id="howto" class="hidden">
+        <p><b>W A S D</b> move / drive &nbsp;·&nbsp; <b>Mouse drag</b> orbit camera
+        &nbsp;·&nbsp; <b>E</b> enter / exit car &nbsp;·&nbsp; <b>Space</b> handbrake / jump
+        &nbsp;·&nbsp; <b>Click</b> shoot &nbsp;·&nbsp; <b>F</b> melee &nbsp;·&nbsp;
+        <b>Shift</b> sprint &nbsp;·&nbsp; <b>R</b> reload &nbsp;·&nbsp; <b>Esc</b> pause
+        &nbsp;·&nbsp; <b>M</b> mute</p>
+        <p>Follow the gold marker. Stealing cars, hitting pedestrians and
+        shooting raise your wanted level — the police will chase, ram and
+        try to bust you. Lose them and the heat cools off.</p>
+      </div>
+      <p class="foot">An original game for make.fun gta6-01 · v1.0</p>
+    </div>
+  </div>
+
+  <div id="pause" class="overlay hidden">
+    <div class="panel">
+      <h1>PAUSED</h1>
+      <div class="buttons">
+        <button id="btnResume">RESUME</button>
+        <button id="btnRestart">RESTART MISSION</button>
+        <button id="btnQuit">QUIT TO MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="endcard" class="overlay hidden">
+    <div class="panel">
+      <h1 id="endTitle"></h1>
+      <p id="endText"></p>
+      <div class="buttons">
+        <button id="btnEndRetry">TRY AGAIN</button>
+        <button id="btnEndMenu">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
