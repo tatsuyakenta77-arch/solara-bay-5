@@ -167,7 +167,7 @@ try {
     s = await st();
     const co = s.courier;
     if (!co) break;
-    const behind = { x: co.x, z: co.z - 25 };
+    const behind = { x: co.x, z: co.z - 12 };
     const heading = Math.atan2(co.x - behind.x, co.z - behind.z);
     await dbg(`window.__MH.debug.teleport(${behind.x}, ${behind.z}, ${heading})`);
     await holdUntil('KeyW', async () => {

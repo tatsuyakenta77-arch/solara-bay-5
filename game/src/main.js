@@ -498,8 +498,10 @@ function updateCar(dt) {
 function updateCourier(dt) {
   const co = S.courier;
   if (!co || S.courierStopped) return;
-  // Flee from the player along the road grid.
-  const dx = co.x - player.x, dz = co.z - player.z;
+  // Flee from where the player actually is (the car, when driving).
+  const px = S.inCar ? S.inCar.x : player.x;
+  const pz = S.inCar ? S.inCar.z : player.z;
+  const dx = co.x - px, dz = co.z - pz;
   const dist = Math.hypot(dx, dz) || 1;
   const want = Math.atan2(dx, dz);
   let dh = want - co.heading;
@@ -579,12 +581,14 @@ function frame() {
     if (S.inCar) updateCar(dt); else updatePlayer(dt);
     updateCourier(dt);
     traffic.update(dt);
-    peds.update(dt, player.x, player.z, S.inCar ? Math.abs(S.inCar.speed) : 0, !!S.inCar);
-    combat.update(dt, player.x, player.z, camera,
+    const effX = S.inCar ? S.inCar.x : player.x;
+    const effZ = S.inCar ? S.inCar.z : player.z;
+    peds.update(dt, effX, effZ, S.inCar ? Math.abs(S.inCar.speed) : 0, !!S.inCar);
+    combat.update(dt, effX, effZ, camera,
       (e) => { audio.enemyShot(); particles.burst(e.x, 1.3, e.z, 0xffdd66, 4, 3, 1); },
       (dmg) => {
         S.health -= dmg;
-        particles.burst(player.x, 1.2, player.z, 0xff3333, 8, 4, 2);
+        particles.burst(effX, 1.2, effZ, 0xff3333, 8, 4, 2);
         if (S.health <= 0) { bustOrWaste('wasted'); return; }
       });
     const pk = S.health < TUNING.playerHealth ? combat.pickupNear(player.x, player.z, 2.2) : null;
