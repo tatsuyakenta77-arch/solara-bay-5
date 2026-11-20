@@ -645,6 +645,8 @@ window.__MH = {
       stage: missions.stage() ? missions.stage().type : null,
       cash: S.cash,
       health: Math.round(S.health),
+      mag: S.mag,
+      reserve: S.reserve,
       wanted: S.wanted,
       heat: Math.round(S.heat),
       speed: S.inCar ? S.inCar.speed : 0,

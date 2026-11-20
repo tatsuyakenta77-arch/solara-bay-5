@@ -24,7 +24,7 @@ const browser = await chromium.launch({
   executablePath: '/home/hatch/.cache/ms-playwright/chromium-1181/chrome-linux/chrome',
   args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'],
 });
-const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
 page.on('requestfailed', (r) => errors.push('reqfail: ' + r.url()));
@@ -32,6 +32,23 @@ page.on('requestfailed', (r) => errors.push('reqfail: ' + r.url()));
 const st = async () => page.evaluate(() => window.__MH.state);
 const dbg = async (expr) => page.evaluate(expr);
 const key = async (code, ms) => { await page.keyboard.down(code); await sleep(ms); await page.keyboard.up(code); };
+// Hold a key until a state condition is true (headless swiftshader runs
+// far below 60fps, so fixed sleeps are unreliable here).
+const holdUntil = async (code, cond, timeout = 30000, label = 'condition') => {
+  await page.keyboard.down(code);
+  try {
+    return await waitFor(cond, timeout, label);
+  } finally {
+    await page.keyboard.up(code);
+  }
+};
+const shot = async (path) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await sleep(600);
+  await page.screenshot({ path, type: 'jpeg', quality: 82 });
+  await page.setViewportSize({ width: 960, height: 540 });
+  await sleep(300);
+};
 const waitFor = async (fn, timeout = 15000, label = 'condition') => {
   const t0 = Date.now();
   while (Date.now() - t0 < timeout) {
@@ -55,10 +72,10 @@ try {
   let s = await st();
   assert(s.mode === 'playing', `mode playing (got ${s.mode})`);
   assert(s.mission === 'First Gear', `mission 1 active (got ${s.mission})`);
-  await key('KeyW', 1200);
+  await holdUntil('KeyW', async () => (await st()).z > 50, 20000, 'player walks');
   s = await st();
   assert(Math.abs(s.z - 48) > 2 || Math.abs(s.x) > 2, 'player walks');
-  await page.screenshot({ path: `${SHOTS}/4-street.jpg`, type: 'jpeg', quality: 82 });
+  await shot(`${SHOTS}/4-street.jpg`);
 
   // Steal the starter car and drive.
   await dbg(`window.__MH.debug.teleport(10, 34)`);
@@ -67,10 +84,10 @@ try {
   await sleep(400);
   s = await st();
   assert(s.inCar, 'entered a car');
-  await key('KeyW', 2500);
+  await holdUntil('KeyW', async () => Math.abs((await st()).speed) > 5, 20000, 'car drives');
   s = await st();
   assert(Math.abs(s.speed) > 5, `car drives (speed ${s.speed.toFixed(1)})`);
-  await page.screenshot({ path: `${SHOTS}/1-cover.jpg`, type: 'jpeg', quality: 82 });
+  await shot(`${SHOTS}/1-cover.jpg`);
 
   // Mission 1: deliver to Mara's garage.
   await dbg(`window.__MH.debug.teleport(-90, -48)`);
@@ -120,7 +137,7 @@ try {
   await sleep(300);
   s = await st();
   assert(s.mag === magBefore - 1, `pistol fires (mag ${magBefore} -> ${s.mag})`);
-  await page.screenshot({ path: `${SHOTS}/3-mission.jpg`, type: 'jpeg', quality: 82 });
+  await shot(`${SHOTS}/3-mission.jpg`);
   await dbg(`window.__MH.debug.killAll()`);
   await waitFor(async () => (await st()).mission === 'Harbour Run', 8000, 'mission 5 starts');
   assert((await st()).mission === 'Harbour Run', 'mission 5 active');
@@ -141,7 +158,10 @@ try {
     const behind = { x: co.x, z: co.z - 25 };
     const heading = Math.atan2(co.x - behind.x, co.z - behind.z);
     await dbg(`window.__MH.debug.teleport(${behind.x}, ${behind.z}, ${heading})`);
-    await key('KeyW', 2200);
+    await holdUntil('KeyW', async () => {
+      const cur = await st();
+      return !cur.courier || cur.courier.health < 100;
+    }, 25000, 'ram connects');
     s = await st();
     if (s.courier && s.courier.health < 100) rammed = true;
   }
@@ -162,8 +182,8 @@ try {
   s = await st();
   assert(s.wanted === 3, `wanted 3 stars (got ${s.wanted})`);
   assert(s.police >= 2, `${s.police} police units chasing`);
-  await key('KeyW', 1500);
-  await page.screenshot({ path: `${SHOTS}/2-chase.jpg`, type: 'jpeg', quality: 82 });
+  await holdUntil('KeyW', async () => Math.abs((await st()).speed) > 8, 20000, 'fleeing');
+  await shot(`${SHOTS}/2-chase.jpg`);
 
   // Pause / resume.
   await page.keyboard.press('Escape');

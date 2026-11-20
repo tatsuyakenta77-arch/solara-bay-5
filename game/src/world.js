@@ -60,7 +60,7 @@ export function buildWorld(scene) {
     v.rotation.x = -Math.PI / 2; v.position.set(r, 0, 0); scene.add(v);
     for (let d = -WORLD.bound; d <= WORLD.bound; d += 16) {
       const dash = new THREE.Mesh(new THREE.PlaneGeometry(5, 0.5), dashMat);
-      dash.rotation.x = -Math.PI / 2; dash.position.set(d, 0.01, r); scene.add(d);
+      dash.rotation.x = -Math.PI / 2; dash.position.set(d, 0.01, r); scene.add(dash);
       const dash2 = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 5), dashMat);
       dash2.rotation.x = -Math.PI / 2; dash2.position.set(r, 0.01, d); scene.add(dash2);
     }
