@@ -666,7 +666,7 @@ window.__MH = {
       kills: S.kills,
       enemies: combat.enemies.length,
       police: police.units.length,
-      courier: S.courier ? { x: Math.round(S.courier.x), z: Math.round(S.courier.z), health: Math.round(S.courier.health) } : null,
+      courier: S.courier ? { x: Math.round(S.courier.x), z: Math.round(S.courier.z), heading: S.courier.heading, health: Math.round(S.courier.health) } : null,
     };
   },
   debug: {

@@ -161,28 +161,31 @@ try {
   await sleep(400);
   s = await st();
   assert(s.inCar, 'in a car for the chase');
-  // Chase the courier down and ram it: teleport behind it, heading at it.
+  // Chase the courier down and ram it: teleport in behind it, on its
+  // heading, so the faster player car runs it down from behind.
   let rammed = false;
   for (let attempt = 0; attempt < 3 && !rammed; attempt++) {
     s = await st();
     const co = s.courier;
     if (!co) break;
-    const behind = { x: co.x, z: co.z - 12 };
-    const heading = Math.atan2(co.x - behind.x, co.z - behind.z);
-    await dbg(`window.__MH.debug.teleport(${behind.x}, ${behind.z}, ${heading})`);
+    const behind = { x: co.x - Math.sin(co.heading) * 12, z: co.z - Math.cos(co.heading) * 12 };
+    await dbg(`window.__MH.debug.teleport(${behind.x}, ${behind.z}, ${co.heading})`);
     await holdUntil('KeyW', async () => {
       const cur = await st();
       return !cur.courier || cur.courier.health < 100;
-    }, 90000, 'ram connects');
+    }, 60000, 'ram connects');
     s = await st();
     if (s.courier && s.courier.health < 100) rammed = true;
   }
   assert(rammed, 'ramming the courier damages it');
   await dbg(`window.__MH.debug.damageCourier(100)`);
   await sleep(500);
-  // The pickup stage can complete instantly (the briefcase drops at the
-  // player's feet), so accept either it or the deliver stage that follows.
-  await waitFor(async () => { const s = await st(); return s.stage === 'pickup' || s.stage === 'goto'; }, 15000, 'briefcase stage');
+  // Go to the briefcase (where the courier stopped), then deliver it.
+  s = await st();
+  if (s.courier) {
+    await dbg(`window.__MH.debug.teleport(${s.courier.x}, ${s.courier.z})`);
+  }
+  await waitFor(async () => (await st()).stage === 'goto', 15000, 'briefcase stage');
   s = await st();
   await dbg(`window.__MH.debug.teleport(${s.x}, ${s.z})`);
   await sleep(300);
