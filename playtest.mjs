@@ -198,7 +198,7 @@ try {
 
   // Police pursuit + chase screenshot.
   await dbg(`window.__MH.debug.setWanted(3)`);
-  await waitFor(async () => (await st()).police >= 2, 10000, 'police respond');
+  await waitFor(async () => (await st()).police.length >= 2, 10000, 'police respond');
   s = await st();
   assert(s.wanted === 3, `wanted 3 stars (got ${s.wanted})`);
   assert(s.police.length >= 2, `${s.police.length} police units chasing`);
